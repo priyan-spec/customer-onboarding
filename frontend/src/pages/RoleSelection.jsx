@@ -1,10 +1,22 @@
 import { Link } from 'react-router-dom'
 import { roleCards } from '../data/mockData.js'
+import { dashboardPathForRole, getAuthUser } from '../services/api.js'
 
 function RoleSelection() {
+  const authUser = getAuthUser()
+
   return (
     <main className="role-page">
       <section className="role-panel text-center">
+        <div className="d-flex justify-content-end gap-2 mb-4">
+          <Link to="/login" className="btn btn-outline-primary">
+            Login
+          </Link>
+          <Link to="/signup" className="btn btn-primary">
+            Sign Up
+          </Link>
+        </div>
+
         <div className="mb-5">
           <span className="brand-mark mx-auto mb-4">
             <i className="bi bi-rocket-takeoff" aria-hidden="true"></i>
@@ -16,7 +28,10 @@ function RoleSelection() {
         <div className="row g-4 justify-content-center">
           {roleCards.map((role) => (
             <div className="col-12 col-md-6 col-xl-4" key={role.title}>
-              <Link to={role.to} className="text-decoration-none text-reset">
+              <Link
+                to={authUser ? dashboardPathForRole(authUser.role) : `/login?role=${role.role}`}
+                className="text-decoration-none text-reset"
+              >
                 <article className="role-card card h-100">
                   <div className="card-body p-4 p-xl-5 d-flex flex-column align-items-center justify-content-center">
                     <span className="role-icon mb-4">

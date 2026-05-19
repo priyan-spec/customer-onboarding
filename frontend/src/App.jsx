@@ -1,5 +1,8 @@
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
+import ProtectedRoute from './components/ProtectedRoute.jsx'
 import RoleSelection from './pages/RoleSelection.jsx'
+import LoginPage from './pages/LoginPage.jsx'
+import SignupPage from './pages/SignupPage.jsx'
 import CustomerDashboard from './pages/customer/CustomerDashboard.jsx'
 import CreateOnboarding from './pages/customer/CreateOnboarding.jsx'
 import CustomerProjects from './pages/customer/CustomerProjects.jsx'
@@ -15,15 +18,17 @@ function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<RoleSelection />} />
-        <Route path="/customer" element={<CustomerDashboard />} />
-        <Route path="/customer/create" element={<CreateOnboarding />} />
-        <Route path="/customer/projects" element={<CustomerProjects />} />
-        <Route path="/manager" element={<ManagerDashboard />} />
-        <Route path="/manager/project/:projectId" element={<ProjectDetails />} />
-        <Route path="/manager/projects" element={<ManagerDashboard />} />
-        <Route path="/team-member" element={<TeamDashboard />} />
-        <Route path="/team-member/tasks" element={<MyTasks />} />
-        <Route path="/team-member/projects" element={<TeamProjects />} />
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/signup" element={<SignupPage />} />
+        <Route path="/customer" element={<ProtectedRoute><CustomerDashboard /></ProtectedRoute>} />
+        <Route path="/customer/create" element={<ProtectedRoute><CreateOnboarding /></ProtectedRoute>} />
+        <Route path="/customer/projects" element={<ProtectedRoute><CustomerProjects /></ProtectedRoute>} />
+        <Route path="/manager" element={<ProtectedRoute><ManagerDashboard /></ProtectedRoute>} />
+        <Route path="/manager/project/:projectId" element={<ProtectedRoute><ProjectDetails /></ProtectedRoute>} />
+        <Route path="/manager/projects" element={<ProtectedRoute><ManagerDashboard /></ProtectedRoute>} />
+        <Route path="/team-member" element={<ProtectedRoute><TeamDashboard /></ProtectedRoute>} />
+        <Route path="/team-member/tasks" element={<ProtectedRoute><MyTasks /></ProtectedRoute>} />
+        <Route path="/team-member/projects" element={<ProtectedRoute><TeamProjects /></ProtectedRoute>} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>

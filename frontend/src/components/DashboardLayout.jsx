@@ -2,10 +2,12 @@ import { useState } from 'react'
 import AppNavbar from './AppNavbar.jsx'
 import Sidebar from './Sidebar.jsx'
 import { useLiveUpdates } from '../hooks/useLiveUpdates.js'
+import { getAuthUserName } from '../services/api.js'
 
 function DashboardLayout({ title, subtitle, navItems, roleLabel, userName, children }) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const { notifications } = useLiveUpdates()
+  const displayName = getAuthUserName(userName)
 
   return (
     <div className="app-shell">
@@ -19,7 +21,7 @@ function DashboardLayout({ title, subtitle, navItems, roleLabel, userName, child
         <AppNavbar
           title={title}
           subtitle={subtitle}
-          userName={userName}
+          userName={displayName}
           roleLabel={roleLabel}
           notifications={notifications}
           onMenuClick={() => setSidebarOpen(true)}

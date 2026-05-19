@@ -29,7 +29,7 @@ function formatSize(size) {
   return `${(size / (1024 * 1024)).toFixed(1)} MB`
 }
 
-function FileUpload() {
+function FileUpload({ onFilesSelected }) {
   const [dragging, setDragging] = useState(false)
   const [files, setFiles] = useState(initialFiles)
   const fileInputRef = useRef(null)
@@ -55,6 +55,7 @@ function FileUpload() {
   }, [])
 
   function addFiles(fileList) {
+    const selectedFiles = Array.from(fileList)
     const nextFiles = Array.from(fileList).map((file) => ({
       id: `${file.name}-${file.lastModified}`,
       name: file.name,
@@ -71,6 +72,7 @@ function FileUpload() {
     ]
 
     setFiles((items) => [...nextFiles, ...items])
+    onFilesSelected?.(selectedFiles)
   }
 
   function handleDrop(event) {

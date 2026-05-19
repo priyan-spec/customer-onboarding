@@ -1,18 +1,21 @@
 export const roleCards = [
   {
     title: 'Customer',
+    role: 'CUSTOMER',
     description: 'Create onboarding requests and track progress',
     icon: 'bi-person-badge',
     to: '/customer',
   },
   {
     title: 'Project Manager',
+    role: 'PROJECT_MANAGER',
     description: 'Manage projects and assign tasks to teams',
     icon: 'bi-kanban',
     to: '/manager',
   },
   {
     title: 'Team Member',
+    role: 'TEAM_MEMBER',
     description: 'View assigned tasks and update work status',
     icon: 'bi-people',
     to: '/team-member',

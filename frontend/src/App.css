@@ -178,6 +178,31 @@
   transform: translateY(-6px);
 }
 
+.auth-page {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 32px 16px;
+  background:
+    linear-gradient(180deg, rgba(219, 234, 254, 0.72), rgba(249, 250, 251, 0) 52%),
+    var(--app-bg);
+}
+
+.auth-card {
+  width: min(460px, 100%);
+  padding: 28px;
+  border: 1px solid var(--border-gray);
+  border-radius: 8px;
+  background: #ffffff;
+  box-shadow: var(--shadow-soft);
+}
+
+.auth-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
 .role-icon {
   width: 64px;
   height: 64px;

@@ -12,15 +12,22 @@ function statusClass(status) {
   return 'badge-soft-amber'
 }
 
-function TaskCard({ task, interactive = true }) {
+function TaskCard({ task, interactive = true, onStatusChange }) {
   const [status, setStatus] = useState(task.status)
+  const projectName = task.project ?? task.projectTitle
+  const assigneeName = task.assignee ?? task.assigneeName ?? 'Unassigned'
+
+  function updateStatus(nextStatus) {
+    setStatus(nextStatus)
+    onStatusChange?.(task, nextStatus)
+  }
 
   return (
     <div className="task-card p-3 h-100">
       <div className="d-flex align-items-start justify-content-between gap-3 mb-3">
         <div>
           <h3 className="h6 fw-bold mb-1">{task.title}</h3>
-          <p className="small text-secondary mb-0">{task.project}</p>
+          <p className="small text-secondary mb-0">{projectName}</p>
         </div>
         <span className={`badge rounded-pill ${priorityClass(task.priority)}`}>{task.priority}</span>
       </div>
@@ -33,20 +40,20 @@ function TaskCard({ task, interactive = true }) {
         </span>
         <span className="badge text-bg-light border">
           <i className="bi bi-person me-1" aria-hidden="true"></i>
-          {task.assignee}
+          {assigneeName}
         </span>
       </div>
       {interactive && (
         <div className="d-flex flex-column flex-sm-row gap-2">
-          <select className="form-select form-select-sm" value={status} onChange={(event) => setStatus(event.target.value)}>
+          <select className="form-select form-select-sm" value={status} onChange={(event) => updateStatus(event.target.value)}>
             <option value="TODO">TODO</option>
             <option value="IN_PROGRESS">IN_PROGRESS</option>
             <option value="DONE">DONE</option>
           </select>
-          <button className="btn btn-outline-primary btn-sm" type="button" onClick={() => setStatus('IN_PROGRESS')}>
+          <button className="btn btn-outline-primary btn-sm" type="button" onClick={() => updateStatus('IN_PROGRESS')}>
             Start Task
           </button>
-          <button className="btn btn-primary btn-sm" type="button" onClick={() => setStatus('DONE')}>
+          <button className="btn btn-primary btn-sm" type="button" onClick={() => updateStatus('DONE')}>
             Mark as Complete
           </button>
         </div>

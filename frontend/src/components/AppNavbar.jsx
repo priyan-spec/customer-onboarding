@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
+import { clearAuthToken } from '../services/api.js'
 
 function AppNavbar({ title, subtitle, userName, roleLabel, notifications, onMenuClick }) {
   const [showNotifications, setShowNotifications] = useState(false)
@@ -72,7 +73,11 @@ function AppNavbar({ title, subtitle, userName, roleLabel, notifications, onMenu
             </span>
           </div>
 
-          <Link to="/" className="btn btn-outline-secondary btn-sm d-inline-flex align-items-center gap-2">
+          <Link
+            to="/login"
+            className="btn btn-outline-secondary btn-sm d-inline-flex align-items-center gap-2"
+            onClick={clearAuthToken}
+          >
             <i className="bi bi-box-arrow-right" aria-hidden="true"></i>
             <span className="d-none d-md-inline">Logout</span>
           </Link>
