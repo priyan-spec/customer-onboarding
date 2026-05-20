@@ -25,7 +25,13 @@ public class WebSocketAuthChannelInterceptor implements ChannelInterceptor {
 	@Override
 	public Message<?> preSend(Message<?> message, MessageChannel channel) {
 		StompHeaderAccessor accessor = MessageHeaderAccessor.getAccessor(message, StompHeaderAccessor.class);
-		if (accessor == null || accessor.getCommand() != StompCommand.CONNECT) {
+		if (accessor == null) {
+			return message;
+		}
+		if (accessor.getCommand() == StompCommand.SUBSCRIBE) {
+			return canSubscribe(accessor) ? message : null;
+		}
+		if (accessor.getCommand() != StompCommand.CONNECT) {
 			return message;
 		}
 
@@ -45,11 +51,50 @@ public class WebSocketAuthChannelInterceptor implements ChannelInterceptor {
 					userDetails.getAuthorities()
 				);
 				accessor.setUser(authentication);
+				if (accessor.getSessionAttributes() != null) {
+					accessor.getSessionAttributes().put("userId", userDetails.getId().toString());
+				}
 			}
 		} catch (RuntimeException ignored) {
 			return message;
 		}
 
 		return message;
+	}
+
+	private boolean canSubscribe(StompHeaderAccessor accessor) {
+		String destination = accessor.getDestination();
+		if (destination == null || !destination.startsWith("/queue/notifications/")) {
+			return true;
+		}
+		String userId = destination.substring("/queue/notifications/".length());
+		return userId.equals(authenticatedUserId(accessor));
+	}
+
+	private String authenticatedUserId(StompHeaderAccessor accessor) {
+		if (accessor.getUser() != null) {
+			return accessor.getUser().getName();
+		}
+
+		Object sessionUserId = accessor.getSessionAttributes() == null
+			? null
+			: accessor.getSessionAttributes().get("userId");
+		if (sessionUserId instanceof String userId) {
+			return userId;
+		}
+
+		String authorization = accessor.getFirstNativeHeader("Authorization");
+		if (authorization == null || !authorization.startsWith("Bearer ")) {
+			return null;
+		}
+
+		try {
+			String token = authorization.substring(7);
+			String username = jwtService.extractUsername(token);
+			AppUserDetails userDetails = (AppUserDetails) userDetailsService.loadUserByUsername(username);
+			return jwtService.isTokenValid(token, userDetails) ? userDetails.getId().toString() : null;
+		} catch (RuntimeException ignored) {
+			return null;
+		}
 	}
 }

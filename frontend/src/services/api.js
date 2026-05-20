@@ -210,3 +210,7 @@ export function deleteProjectAssignment(assignmentId) {
     method: 'DELETE',
   })
 }
+
+export function getNotifications(limit = 3) {
+  return apiFetch(`/notifications?limit=${limit}`)
+}

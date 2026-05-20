@@ -6,6 +6,7 @@ import java.util.List;
 import com.onboarding.backend.entity.NotificationType;
 
 public record NotificationMessage(
+	Long id,
 	NotificationType type,
 	String message,
 	Long projectId,

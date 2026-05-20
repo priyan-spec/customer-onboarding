@@ -7,8 +7,10 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.data.domain.PageRequest;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
@@ -17,7 +19,10 @@ import com.onboarding.backend.entity.AppUser;
 import com.onboarding.backend.entity.NotificationType;
 import com.onboarding.backend.entity.Project;
 import com.onboarding.backend.entity.Task;
+import com.onboarding.backend.entity.UserNotification;
 import com.onboarding.backend.repository.ProjectAssignmentRepository;
+import com.onboarding.backend.repository.UserNotificationRepository;
+import com.onboarding.backend.util.CurrentUserUtil;
 
 import lombok.RequiredArgsConstructor;
 
@@ -27,6 +32,8 @@ public class NotificationService {
 
 	private final SimpMessagingTemplate messagingTemplate;
 	private final ProjectAssignmentRepository projectAssignmentRepository;
+	private final UserNotificationRepository userNotificationRepository;
+	private final CurrentUserUtil currentUserUtil;
 
 	public void projectCreated(Project project) {
 		NotificationMessage message = message(
@@ -36,7 +43,7 @@ public class NotificationService {
 			null,
 			project.getManager().getId()
 		);
-		sendToProjectAudience("/topic/projects", project, message);
+		sendToProjectAudience(project, message);
 	}
 
 	public void taskAssigned(Task task) {
@@ -48,7 +55,7 @@ public class NotificationService {
 			task.getId(),
 			assignee == null ? null : assignee.getId()
 		);
-		sendToProjectAudience("/topic/tasks", task.getProject(), message, assignee);
+		sendToProjectAudience(task.getProject(), message, assignee);
 	}
 
 	public void taskUpdated(Task task) {
@@ -60,7 +67,7 @@ public class NotificationService {
 			task.getId(),
 			assignee == null ? null : assignee.getId()
 		);
-		sendToProjectAudience("/topic/tasks", task.getProject(), message, assignee);
+		sendToProjectAudience(task.getProject(), message, assignee);
 	}
 
 	public void taskDeleted(Task task) {
@@ -72,7 +79,7 @@ public class NotificationService {
 			task.getId(),
 			assignee == null ? null : assignee.getId()
 		);
-		sendToProjectAudience("/topic/tasks", task.getProject(), message, assignee);
+		sendToProjectAudience(task.getProject(), message, assignee);
 	}
 
 	public void projectAssignmentUpdated(Project project, AppUser changedMember, String text) {
@@ -83,7 +90,7 @@ public class NotificationService {
 			null,
 			changedMember == null ? null : changedMember.getId()
 		);
-		sendToProjectAudience("/topic/projects", project, message, changedMember);
+		sendToProjectAudience(project, message, changedMember);
 	}
 
 	public void projectProgressUpdated(Project project) {
@@ -94,7 +101,7 @@ public class NotificationService {
 			null,
 			project.getCustomer().getId()
 		);
-		sendToProjectAudience("/topic/projects", project, message);
+		sendToProjectAudience(project, message);
 	}
 
 	public void projectCompleted(Project project) {
@@ -105,16 +112,15 @@ public class NotificationService {
 			null,
 			project.getCustomer().getId()
 		);
-		sendToProjectAudience("/topic/projects", project, message);
+		sendToProjectAudience(project, message);
 	}
 
-	private void sendToProjectAudience(String topic, Project project, NotificationMessage message, AppUser... extraUsers) {
+	private void sendToProjectAudience(Project project, NotificationMessage message, AppUser... extraUsers) {
 		List<AppUser> recipients = projectAudience(project, extraUsers);
-		NotificationMessage targetedMessage = withRecipients(message, recipients);
-		publishAfterCommit(() -> {
-			messagingTemplate.convertAndSend(topic, targetedMessage);
-			recipients.forEach(user -> sendToUser(user, targetedMessage));
-		});
+		List<NotificationMessage> persistedMessages = recipients.stream()
+			.map(user -> saveNotification(user, message))
+			.toList();
+		publishAfterCommit(() -> persistedMessages.forEach(this::sendToUser));
 	}
 
 	private List<AppUser> projectAudience(Project project, AppUser... extraUsers) {
@@ -143,11 +149,11 @@ public class NotificationService {
 			: null;
 	}
 
-	private void sendToUser(AppUser user, NotificationMessage message) {
-		if (user == null) {
+	private void sendToUser(NotificationMessage message) {
+		if (message.recipientId() == null) {
 			return;
 		}
-		messagingTemplate.convertAndSendToUser(user.getId().toString(), "/queue/notifications", message);
+		messagingTemplate.convertAndSend("/queue/notifications/" + message.recipientId(), message);
 	}
 
 	private void publishAfterCommit(Runnable publishAction) {
@@ -164,19 +170,42 @@ public class NotificationService {
 		});
 	}
 
-	private NotificationMessage message(NotificationType type, String text, Long projectId, Long taskId, Long recipientId) {
-		return new NotificationMessage(type, text, projectId, taskId, recipientId, LocalDateTime.now(), List.of());
+	@Transactional(readOnly = true)
+	public List<NotificationMessage> getCurrentUserNotifications(int limit) {
+		int pageSize = Math.max(1, Math.min(limit, 3));
+		Long userId = currentUserUtil.getCurrentUserId();
+		return userNotificationRepository.findByRecipient_IdOrderByCreatedAtDescIdDesc(userId, PageRequest.of(0, pageSize))
+			.stream()
+			.map(this::toMessage)
+			.toList();
 	}
 
-	private NotificationMessage withRecipients(NotificationMessage message, List<AppUser> recipients) {
+	private NotificationMessage message(NotificationType type, String text, Long projectId, Long taskId, Long recipientId) {
+		return new NotificationMessage(null, type, text, projectId, taskId, recipientId, LocalDateTime.now(), List.of());
+	}
+
+	private NotificationMessage saveNotification(AppUser recipient, NotificationMessage message) {
+		UserNotification notification = UserNotification.builder()
+			.recipient(recipient)
+			.type(message.type())
+			.message(message.message())
+			.projectId(message.projectId())
+			.taskId(message.taskId())
+			.createdAt(message.createdAt())
+			.build();
+		return toMessage(userNotificationRepository.save(notification));
+	}
+
+	private NotificationMessage toMessage(UserNotification notification) {
 		return new NotificationMessage(
-			message.type(),
-			message.message(),
-			message.projectId(),
-			message.taskId(),
-			message.recipientId(),
-			message.createdAt(),
-			recipients.stream().map(AppUser::getId).toList()
+			notification.getId(),
+			notification.getType(),
+			notification.getMessage(),
+			notification.getProjectId(),
+			notification.getTaskId(),
+			notification.getRecipient().getId(),
+			notification.getCreatedAt(),
+			List.of(notification.getRecipient().getId())
 		);
 	}
 }

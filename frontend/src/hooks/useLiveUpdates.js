@@ -1,7 +1,7 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Client } from '@stomp/stompjs'
 import SockJS from 'sockjs-client'
-import { getAuthToken, getAuthUser, WS_URL } from '../services/api.js'
+import { getAuthToken, getAuthUser, getNotifications, WS_URL } from '../services/api.js'
 
 const notificationMeta = {
   PROJECT_CREATED: { title: 'Project Created', icon: 'bi-folder-plus' },
@@ -34,7 +34,7 @@ function normalizeNotification(payload) {
 
   return {
     ...payload,
-    id: `${payload.type}-${payload.projectId ?? 'project'}-${payload.taskId ?? 'task'}-${payload.createdAt ?? Date.now()}`,
+    id: payload.id ?? `${payload.type}-${payload.projectId ?? 'project'}-${payload.taskId ?? 'task'}-${payload.createdAt ?? Date.now()}`,
     title: meta.title,
     message: payload.message,
     icon: meta.icon,
@@ -42,18 +42,10 @@ function normalizeNotification(payload) {
   }
 }
 
-function isForCurrentUser(payload, userId) {
-  if (!userId) return false
-  const numericUserId = Number(userId)
-  if (Array.isArray(payload.recipientIds) && payload.recipientIds.length > 0) {
-    return payload.recipientIds.map(Number).includes(numericUserId)
-  }
-  return Number(payload.recipientId) === numericUserId
-}
-
 export function useLiveUpdates() {
   const [notifications, setNotifications] = useState([])
   const [toasts, setToasts] = useState([])
+  const seenNotificationIds = useRef(new Set())
   const token = getAuthToken()
   const authUser = getAuthUser()
   const userId = authUser?.userId
@@ -63,16 +55,54 @@ export function useLiveUpdates() {
       return undefined
     }
 
+    let cancelled = false
+    seenNotificationIds.current.clear()
+
+    async function loadStoredNotifications() {
+      try {
+        const storedNotifications = await getNotifications(3)
+        if (cancelled) {
+          return
+        }
+
+        const normalizedNotifications = storedNotifications.map(normalizeNotification).slice(0, 3)
+        normalizedNotifications.forEach((notification) => {
+          seenNotificationIds.current.add(notification.id)
+        })
+        setNotifications(normalizedNotifications)
+      } catch {
+        if (!cancelled) {
+          setNotifications([])
+        }
+      }
+    }
+
+    loadStoredNotifications()
+
+    return () => {
+      cancelled = true
+    }
+  }, [token, userId])
+
+  useEffect(() => {
+    if (!token || !userId) {
+      return undefined
+    }
+
     function handleMessage(message) {
       const payload = JSON.parse(message.body)
-      if (!isForCurrentUser(payload, userId)) {
-        return
-      }
 
       const next = normalizeNotification(payload)
+      if (seenNotificationIds.current.has(next.id)) {
+        return
+      }
+      seenNotificationIds.current.add(next.id)
+      if (seenNotificationIds.current.size > 100) {
+        seenNotificationIds.current.delete(seenNotificationIds.current.values().next().value)
+      }
 
       window.dispatchEvent(new CustomEvent('onboarding:notification', { detail: payload }))
-      setNotifications((items) => [next, ...items.filter((item) => item.id !== next.id)].slice(0, 12))
+      setNotifications((items) => [next, ...items.filter((item) => item.id !== next.id)].slice(0, 3))
       setToasts((items) => [next, ...items.filter((item) => item.id !== next.id)].slice(0, 3))
     }
 
@@ -84,9 +114,9 @@ export function useLiveUpdates() {
       debug: () => {},
       reconnectDelay: 5000,
       onConnect: () => {
-        client.subscribe('/user/queue/notifications', handleMessage)
-        client.subscribe('/topic/projects', handleMessage)
-        client.subscribe('/topic/tasks', handleMessage)
+        client.subscribe(`/queue/notifications/${userId}`, handleMessage, {
+          Authorization: `Bearer ${token}`,
+        })
       },
     })
 
