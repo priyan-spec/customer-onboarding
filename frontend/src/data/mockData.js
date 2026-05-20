@@ -201,31 +201,3 @@ export const activities = [
     time: '2 hrs ago',
   },
 ]
-
-export const notificationSeeds = [
-  {
-    title: 'Project Created',
-    message: 'A new customer onboarding project is ready for review.',
-    icon: 'bi-folder-plus',
-  },
-  {
-    title: 'Task Assigned',
-    message: 'A teammate was assigned to document verification.',
-    icon: 'bi-person-check',
-  },
-  {
-    title: 'Task Updated',
-    message: 'CRM workspace configuration moved to in progress.',
-    icon: 'bi-arrow-repeat',
-  },
-  {
-    title: 'Project Progress Updated',
-    message: 'Acme CRM Onboarding advanced to 72% completion.',
-    icon: 'bi-graph-up-arrow',
-  },
-  {
-    title: 'Project Completed',
-    message: 'Zenith Verification Workflow has been completed.',
-    icon: 'bi-check-circle',
-  },
-]

@@ -12,11 +12,9 @@ import com.onboarding.backend.dto.UpdateProjectAssignmentRequest;
 import com.onboarding.backend.entity.AppUser;
 import com.onboarding.backend.entity.Project;
 import com.onboarding.backend.entity.ProjectAssignment;
-import com.onboarding.backend.entity.TaskStatus;
 import com.onboarding.backend.exception.BadRequestException;
 import com.onboarding.backend.exception.ResourceNotFoundException;
 import com.onboarding.backend.repository.ProjectAssignmentRepository;
-import com.onboarding.backend.repository.TaskRepository;
 import com.onboarding.backend.repository.UserRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -27,9 +25,9 @@ public class ProjectAssignmentService {
 
 	private final ProjectAssignmentRepository projectAssignmentRepository;
 	private final UserRepository userRepository;
-	private final TaskRepository taskRepository;
 	private final ProjectService projectService;
 	private final AccessControlService accessControlService;
+	private final NotificationService notificationService;
 
 	@Transactional
 	public MessageResponse assignTeamMember(ProjectAssignmentRequest request) {
@@ -48,6 +46,7 @@ public class ProjectAssignmentService {
 			.assignedRole(request.assignedRole())
 			.build();
 		projectAssignmentRepository.save(assignment);
+		notificationService.projectAssignmentUpdated(project, teamMember, "Project Member Assigned");
 		return new MessageResponse("Team Member Assigned Successfully");
 	}
 
@@ -57,6 +56,7 @@ public class ProjectAssignmentService {
 		accessControlService.assertManagerOwns(assignment.getProject());
 		assignment.setAssignedRole(request.assignedRole());
 		projectAssignmentRepository.save(assignment);
+		notificationService.projectAssignmentUpdated(assignment.getProject(), assignment.getTeamMember(), "Project Assignment Updated");
 		return new MessageResponse("Assignment Updated Successfully");
 	}
 
@@ -73,14 +73,11 @@ public class ProjectAssignmentService {
 	public MessageResponse deleteAssignment(Long id) {
 		ProjectAssignment assignment = findAssignment(id);
 		Project project = assignment.getProject();
-		Long teamMemberId = assignment.getTeamMember().getId();
+		AppUser removedMember = assignment.getTeamMember();
 		accessControlService.assertManagerOwns(project);
 
-		int clearedTasks = taskRepository.clearOpenTaskAssigneeForRemovedMember(project.getId(), teamMemberId, TaskStatus.DONE);
 		projectAssignmentRepository.delete(assignment);
-		if (clearedTasks > 0) {
-			projectService.refreshProjectProgress(project);
-		}
+		notificationService.projectAssignmentUpdated(project, removedMember, "Project Member Removed");
 		return new MessageResponse("Assignment Removed Successfully");
 	}
 

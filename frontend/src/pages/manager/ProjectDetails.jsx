@@ -110,6 +110,19 @@ function ProjectDetails() {
     }
   }, [numericProjectId])
 
+  useEffect(() => {
+    function handleNotification(event) {
+      if (Number(event.detail?.projectId) === numericProjectId) {
+        loadProjectWork()
+      }
+    }
+
+    window.addEventListener('onboarding:notification', handleNotification)
+    return () => {
+      window.removeEventListener('onboarding:notification', handleNotification)
+    }
+  }, [loadProjectWork, numericProjectId])
+
   function openNewTask() {
     setMessage('')
     setTaskDraft({

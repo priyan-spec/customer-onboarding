@@ -2,27 +2,6 @@ import { useEffect, useRef, useState } from 'react'
 
 const documentTypes = ['ID Proof', 'Business Certificate', 'Address Proof', 'Other']
 
-const initialFiles = [
-  {
-    id: 'sample-1',
-    name: 'id-proof.png',
-    size: '860 KB',
-    type: 'image/png',
-    category: 'ID Proof',
-    progress: 86,
-    url: '',
-  },
-  {
-    id: 'sample-2',
-    name: 'business-certificate.pdf',
-    size: '2.4 MB',
-    type: 'application/pdf',
-    category: 'Business Certificate',
-    progress: 100,
-    url: '',
-  },
-]
-
 function formatSize(size) {
   if (!size) return '0 KB'
   if (size < 1024 * 1024) return `${Math.round(size / 1024)} KB`
@@ -31,7 +10,7 @@ function formatSize(size) {
 
 function FileUpload({ onFilesSelected }) {
   const [dragging, setDragging] = useState(false)
-  const [files, setFiles] = useState(initialFiles)
+  const [files, setFiles] = useState([])
   const fileInputRef = useRef(null)
   const objectUrlsRef = useRef([])
 
@@ -56,6 +35,10 @@ function FileUpload({ onFilesSelected }) {
 
   function addFiles(fileList) {
     const selectedFiles = Array.from(fileList)
+    if (selectedFiles.length === 0) {
+      return
+    }
+
     const nextFiles = Array.from(fileList).map((file) => ({
       id: `${file.name}-${file.lastModified}`,
       name: file.name,
@@ -107,7 +90,10 @@ function FileUpload({ onFilesSelected }) {
           type="file"
           multiple
           accept="image/*,.pdf"
-          onChange={(event) => addFiles(event.target.files)}
+          onChange={(event) => {
+            addFiles(event.target.files)
+            event.target.value = ''
+          }}
         />
         <button className="btn btn-outline-primary" type="button" onClick={() => fileInputRef.current?.click()}>
           <i className="bi bi-paperclip me-2" aria-hidden="true"></i>
@@ -116,6 +102,13 @@ function FileUpload({ onFilesSelected }) {
       </div>
 
       <div className="row g-3 mt-1">
+        {files.length === 0 && (
+          <div className="col-12">
+            <div className="text-center text-secondary p-3 border rounded">
+              No documents selected yet.
+            </div>
+          </div>
+        )}
         {files.map((file) => (
           <div className="col-12 col-md-6" key={file.id}>
             <div className="file-preview p-3">

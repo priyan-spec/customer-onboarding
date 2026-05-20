@@ -67,6 +67,19 @@ function MyTasks() {
     }
   }, [authUser?.userId])
 
+  useEffect(() => {
+    function handleNotification(event) {
+      if (['TASK_ASSIGNED', 'TASK_UPDATED', 'TASK_DELETED', 'PROJECT_ASSIGNMENT_UPDATED'].includes(event.detail?.type)) {
+        loadTasks()
+      }
+    }
+
+    window.addEventListener('onboarding:notification', handleNotification)
+    return () => {
+      window.removeEventListener('onboarding:notification', handleNotification)
+    }
+  }, [loadTasks])
+
   async function handleStatusChange(task, status) {
     try {
       await updateTask(task.taskId, { status })

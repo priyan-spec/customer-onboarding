@@ -13,6 +13,7 @@ function CreateOnboarding() {
     deadline: '',
   })
   const [documents, setDocuments] = useState([])
+  const [uploadKey, setUploadKey] = useState(0)
   const [message, setMessage] = useState('')
 
   function updateField(field, value) {
@@ -26,6 +27,15 @@ function CreateOnboarding() {
     try {
       const response = await createOnboardingProject({ ...form, documents })
       setMessage(response.message)
+      setForm({
+        title: '',
+        description: '',
+        requirements: '',
+        priority: 'MEDIUM',
+        deadline: '',
+      })
+      setDocuments([])
+      setUploadKey((value) => value + 1)
     } catch (error) {
       setMessage(error.message)
     }
@@ -132,7 +142,7 @@ function CreateOnboarding() {
                 <p className="text-secondary mb-0">Upload ID Proof, Business Certificate, Address Proof, or Other documents.</p>
               </div>
             </div>
-            <FileUpload onFilesSelected={(files) => setDocuments((current) => [...files, ...current])} />
+            <FileUpload key={uploadKey} onFilesSelected={(files) => setDocuments((current) => [...files, ...current])} />
           </section>
         </div>
 

@@ -36,9 +36,11 @@ function AppNavbar({ title, subtitle, userName, roleLabel, notifications, onMenu
               title="Notifications"
             >
               <i className="bi bi-bell" aria-hidden="true"></i>
-              <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
-                {notifications.length}
-              </span>
+              {notifications.length > 0 && (
+                <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                  {notifications.length}
+                </span>
+              )}
             </button>
 
             {showNotifications && (
@@ -48,6 +50,9 @@ function AppNavbar({ title, subtitle, userName, roleLabel, notifications, onMenu
                   <span className="badge badge-soft-blue rounded-pill">Live</span>
                 </div>
                 <div className="notification-list vstack gap-3">
+                  {notifications.length === 0 && (
+                    <div className="text-center text-secondary small py-3">No notifications yet.</div>
+                  )}
                   {notifications.map((item) => (
                     <div key={item.id} className="d-flex gap-3">
                       <span className="role-icon flex-shrink-0" style={{ width: 38, height: 38, fontSize: 18 }}>

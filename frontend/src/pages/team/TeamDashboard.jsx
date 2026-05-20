@@ -86,6 +86,19 @@ function TeamDashboard() {
     }
   }, [authUser?.userId])
 
+  useEffect(() => {
+    function handleNotification(event) {
+      if (['TASK_ASSIGNED', 'TASK_UPDATED', 'TASK_DELETED', 'PROJECT_ASSIGNMENT_UPDATED'].includes(event.detail?.type)) {
+        loadTeamWork()
+      }
+    }
+
+    window.addEventListener('onboarding:notification', handleNotification)
+    return () => {
+      window.removeEventListener('onboarding:notification', handleNotification)
+    }
+  }, [loadTeamWork])
+
   const stats = useMemo(() => ({
     assigned: tasks.length,
     completed: tasks.filter((task) => task.status === 'DONE').length,

@@ -1,6 +1,7 @@
 package com.onboarding.backend.dto;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 import com.onboarding.backend.entity.NotificationType;
 
@@ -10,6 +11,7 @@ public record NotificationMessage(
 	Long projectId,
 	Long taskId,
 	Long recipientId,
-	LocalDateTime createdAt
+	LocalDateTime createdAt,
+	List<Long> recipientIds
 ) {
 }

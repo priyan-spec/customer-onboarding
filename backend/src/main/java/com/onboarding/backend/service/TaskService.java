@@ -84,6 +84,7 @@ public class TaskService {
 		Task task = findTask(taskId);
 		accessControlService.assertManagerOwns(task.getProject());
 		Project project = task.getProject();
+		notificationService.taskDeleted(task);
 		taskRepository.delete(task);
 		taskRepository.flush();
 		projectService.refreshProjectProgress(project);
@@ -133,7 +134,6 @@ public class TaskService {
 		if (request.status() != null) {
 			task.setStatus(request.status());
 		}
-		clearAssigneeIfOpenTaskIsOutsideProject(task);
 	}
 
 	private void applyTeamMemberUpdate(Task task, UpdateTaskRequest request, AppUser currentUser) {
@@ -157,16 +157,6 @@ public class TaskService {
 		}
 	}
 
-	private void clearAssigneeIfOpenTaskIsOutsideProject(Task task) {
-		AppUser assignee = task.getAssignee();
-		if (assignee == null || task.getStatus() == TaskStatus.DONE) {
-			return;
-		}
-		if (!projectAssignmentRepository.existsByProjectIdAndTeamMemberId(task.getProject().getId(), assignee.getId())) {
-			task.setAssignee(null);
-		}
-	}
-
 	private Task findTask(Long taskId) {
 		return taskRepository.findById(taskId)
 			.orElseThrow(() -> new ResourceNotFoundException("Task not found"));
@@ -179,14 +169,16 @@ public class TaskService {
 
 	private TaskResponse toResponse(Task task) {
 		AppUser assignee = task.getAssignee();
+		boolean assigneeIsActiveOnProject = assignee != null
+			&& projectAssignmentRepository.existsByProjectIdAndTeamMemberId(task.getProject().getId(), assignee.getId());
 		return new TaskResponse(
 			task.getId(),
 			task.getProject().getId(),
 			task.getProject().getTitle(),
 			task.getTitle(),
 			task.getDescription(),
-			assignee == null ? null : assignee.getId(),
-			assignee == null ? null : assignee.getName(),
+			assigneeIsActiveOnProject ? assignee.getId() : null,
+			assigneeIsActiveOnProject ? assignee.getName() : null,
 			task.getPriority(),
 			task.getDueDate(),
 			task.getStatus()

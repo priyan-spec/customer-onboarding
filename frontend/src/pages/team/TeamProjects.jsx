@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import DashboardLayout from '../../components/DashboardLayout.jsx'
 import ProgressProjectCard from '../../components/ProgressProjectCard.jsx'
 import { teamNav } from '../../data/mockData.js'
@@ -14,36 +14,36 @@ function TeamProjects() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
+  const loadProjects = useCallback(async () => {
+    if (!authUser?.userId) {
+      setError('Login again to view active projects.')
+      setLoading(false)
+      return
+    }
+
+    try {
+      setLoading(true)
+      setError('')
+      const tasks = await getTasksByAssignee(authUser.userId)
+      const activeProjects = await Promise.all(
+        uniqueProjectIds(tasks).map((projectId) => getProject(projectId).catch(() => null)),
+      )
+
+      setProjects(activeProjects.filter(Boolean))
+    } catch (loadError) {
+      setError(loadError.message)
+      setProjects([])
+    } finally {
+      setLoading(false)
+    }
+  }, [authUser?.userId])
+
   useEffect(() => {
     let cancelled = false
 
     async function loadInitialProjects() {
-      if (!authUser?.userId) {
-        setError('Login again to view active projects.')
-        setLoading(false)
-        return
-      }
-
-      try {
-        setLoading(true)
-        setError('')
-        const tasks = await getTasksByAssignee(authUser.userId)
-        const activeProjects = await Promise.all(
-          uniqueProjectIds(tasks).map((projectId) => getProject(projectId).catch(() => null)),
-        )
-
-        if (!cancelled) {
-          setProjects(activeProjects.filter(Boolean))
-        }
-      } catch (loadError) {
-        if (!cancelled) {
-          setError(loadError.message)
-          setProjects([])
-        }
-      } finally {
-        if (!cancelled) {
-          setLoading(false)
-        }
+      if (!cancelled) {
+        await loadProjects()
       }
     }
 
@@ -52,7 +52,20 @@ function TeamProjects() {
     return () => {
       cancelled = true
     }
-  }, [authUser?.userId])
+  }, [loadProjects])
+
+  useEffect(() => {
+    function handleNotification(event) {
+      if (['TASK_ASSIGNED', 'TASK_UPDATED', 'TASK_DELETED', 'PROJECT_ASSIGNMENT_UPDATED'].includes(event.detail?.type)) {
+        loadProjects()
+      }
+    }
+
+    window.addEventListener('onboarding:notification', handleNotification)
+    return () => {
+      window.removeEventListener('onboarding:notification', handleNotification)
+    }
+  }, [loadProjects])
 
   return (
     <DashboardLayout

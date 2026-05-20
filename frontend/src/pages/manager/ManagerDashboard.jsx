@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import DashboardLayout from '../../components/DashboardLayout.jsx'
 import StatCard from '../../components/StatCard.jsx'
@@ -12,47 +12,60 @@ function ManagerDashboard() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
+  const loadManagerWork = useCallback(async () => {
+    if (!authUser?.userId) {
+      setError('Login again to view assigned projects.')
+      setLoading(false)
+      return
+    }
+
+    try {
+      setLoading(true)
+      setError('')
+      const managerProjects = await getManagerProjects(authUser.userId)
+      const projectTasks = await Promise.all(
+        managerProjects.map((project) => getTasksByProject(project.projectId).catch(() => [])),
+      )
+
+      setProjects(managerProjects)
+      setTasks(projectTasks.flat())
+    } catch (loadError) {
+      setError(loadError.message)
+      setProjects([])
+      setTasks([])
+    } finally {
+      setLoading(false)
+    }
+  }, [authUser?.userId])
+
   useEffect(() => {
     let cancelled = false
 
-    async function loadManagerWork() {
-      if (!authUser?.userId) {
-        setError('Login again to view assigned projects.')
-        setLoading(false)
-        return
-      }
-
-      try {
-        setLoading(true)
-        setError('')
-        const managerProjects = await getManagerProjects(authUser.userId)
-        const projectTasks = await Promise.all(
-          managerProjects.map((project) => getTasksByProject(project.projectId).catch(() => [])),
-        )
-
-        if (!cancelled) {
-          setProjects(managerProjects)
-          setTasks(projectTasks.flat())
-        }
-      } catch (loadError) {
-        if (!cancelled) {
-          setError(loadError.message)
-          setProjects([])
-          setTasks([])
-        }
-      } finally {
-        if (!cancelled) {
-          setLoading(false)
-        }
+    async function loadInitialManagerWork() {
+      if (!cancelled) {
+        await loadManagerWork()
       }
     }
 
-    loadManagerWork()
+    loadInitialManagerWork()
 
     return () => {
       cancelled = true
     }
-  }, [authUser?.userId])
+  }, [loadManagerWork])
+
+  useEffect(() => {
+    function handleNotification(event) {
+      if (event.detail?.projectId || event.detail?.taskId) {
+        loadManagerWork()
+      }
+    }
+
+    window.addEventListener('onboarding:notification', handleNotification)
+    return () => {
+      window.removeEventListener('onboarding:notification', handleNotification)
+    }
+  }, [loadManagerWork])
 
   const stats = useMemo(() => {
     const activeProjects = projects.filter((project) => project.status === 'ACTIVE')

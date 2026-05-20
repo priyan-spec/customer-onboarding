@@ -1,4 +1,5 @@
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8080/api'
+export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8080/api'
+export const WS_URL = import.meta.env.VITE_WS_URL ?? `${API_BASE_URL.replace(/\/api\/?$/, '')}/ws`
 const TOKEN_KEY = 'onboarding_auth_token'
 const USER_KEY = 'onboarding_auth_user'
 

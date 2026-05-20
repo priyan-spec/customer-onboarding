@@ -42,8 +42,8 @@ public class Task {
 	@Column(nullable = false, length = 1000)
 	private String description;
 
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "assignee")
+	@ManyToOne(fetch = FetchType.LAZY, optional = false)
+	@JoinColumn(name = "assignee", nullable = false)
 	private AppUser assignee;
 
 	@Enumerated(EnumType.STRING)
