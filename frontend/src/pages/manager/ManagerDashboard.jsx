@@ -83,7 +83,7 @@ function ManagerDashboard() {
   return (
     <DashboardLayout
       title="Project manager dashboard"
-      subtitle="Add tasks and assign members for each onboarding project."
+      subtitle="Add tasks and assign members for each project."
       navItems={managerNav}
       roleLabel="Project Manager"
       userName="Maya Singh"
@@ -125,7 +125,7 @@ function ManagerDashboard() {
               <i className="bi bi-kanban" aria-hidden="true"></i>
             </span>
             <h3 className="h5 fw-bold mb-2">No assigned projects yet</h3>
-            <p className="text-secondary mb-0">New customer onboarding requests assigned to you will appear here.</p>
+            <p className="text-secondary mb-0">New customer project requests assigned to you will appear here.</p>
           </div>
         ) : (
           <div className="table-responsive">

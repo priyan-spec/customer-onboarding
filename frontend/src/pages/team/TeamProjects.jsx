@@ -70,7 +70,7 @@ function TeamProjects() {
   return (
     <DashboardLayout
       title="Active projects"
-      subtitle="See project context for your assigned onboarding tasks."
+      subtitle="See project context for your assigned project tasks."
       navItems={teamNav}
       roleLabel="Team Member"
       userName="Aarav Mehta"

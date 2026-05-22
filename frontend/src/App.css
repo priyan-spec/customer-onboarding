@@ -344,6 +344,11 @@
   border: 1px solid var(--border-gray);
   border-radius: 8px;
   background: #ffffff;
+  overflow: hidden;
+}
+
+.file-preview .progress {
+  width: 100%;
 }
 
 .preview-thumb {

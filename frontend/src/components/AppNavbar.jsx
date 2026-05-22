@@ -18,14 +18,6 @@ function AppNavbar({ title, subtitle, userName, roleLabel, notifications, onMenu
           </div>
         </div>
 
-        <div className="search-shell">
-          <div className="input-group">
-            <span className="input-group-text">
-              <i className="bi bi-search" aria-hidden="true"></i>
-            </span>
-            <input className="form-control" type="search" placeholder="Search projects, tasks, members" />
-          </div>
-        </div>
 
         <div className="d-flex align-items-center gap-2">
           <div className="position-relative">

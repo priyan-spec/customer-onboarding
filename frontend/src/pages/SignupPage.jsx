@@ -50,8 +50,8 @@ function SignupPage() {
             <i className="bi bi-rocket-takeoff" aria-hidden="true"></i>
           </span>
           <span>
-            <span className="d-block fw-bold">OnboardFlow</span>
-            <span className="small text-secondary">Customer Onboarding Tracker</span>
+            <span className="d-block fw-bold">ProjectFlow</span>
+            <span className="small text-secondary">Project Status Tracker</span>
           </span>
         </div>
 

@@ -62,8 +62,8 @@ function CustomerProjects() {
 
   return (
     <DashboardLayout
-      title="My projects"
-      subtitle="Review every onboarding project and its current progress."
+      title="My Projects"
+      subtitle="Review every project and its current progress."
       navItems={customerNav}
       roleLabel="Customer"
       userName="Nina Patel"
@@ -84,8 +84,8 @@ function CustomerProjects() {
             <i className="bi bi-folder-plus" aria-hidden="true"></i>
           </span>
           <h2 className="h5 fw-bold mb-2">No projects yet</h2>
-          <p className="text-secondary mb-3">Create an onboarding request to see your projects here.</p>
-          <a className="btn btn-primary" href="/customer/create">Create Onboarding</a>
+          <p className="text-secondary mb-3">Create an project request to see your projects here.</p>
+          <a className="btn btn-primary" href="/customer/create">Create project</a>
         </div>
       ) : (
         <div className="row g-4">

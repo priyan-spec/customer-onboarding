@@ -8,6 +8,11 @@ function formatSize(size) {
   return `${(size / (1024 * 1024)).toFixed(1)} MB`
 }
 
+function truncateName(name, maxLength = 28) {
+  if (name.length <= maxLength) return name
+  return `${name.slice(0, maxLength)}...`
+}
+
 function FileUpload({ onFilesSelected }) {
   const [dragging, setDragging] = useState(false)
   const [files, setFiles] = useState([])
@@ -83,7 +88,7 @@ function FileUpload({ onFilesSelected }) {
           <i className="bi bi-cloud-arrow-up" aria-hidden="true"></i>
         </span>
         <h3 className="h5 fw-bold mb-2">Drag and drop documents here</h3>
-        <p className="text-secondary mb-3">Upload multiple files, images, and PDFs for onboarding review.</p>
+        <p className="text-secondary mb-3">Upload multiple files, images, and PDFs for project review.</p>
         <input
           ref={fileInputRef}
           className="d-none"
@@ -121,12 +126,12 @@ function FileUpload({ onFilesSelected }) {
                   )}
                 </span>
                 <div className="flex-grow-1 min-w-0">
-                  <div className="d-flex align-items-start justify-content-between gap-2">
-                    <div>
-                      <h4 className="h6 fw-semibold mb-1 text-truncate">{file.name}</h4>
+                  <div className="d-flex align-items-start justify-content-between gap-2 min-w-0">
+                    <div className="flex-grow-1 min-w-0">
+                      <h4 className="h6 fw-semibold mb-1 text-truncate" title={file.name}>{truncateName(file.name)}</h4>
                       <p className="small text-secondary mb-2">{file.size}</p>
                     </div>
-                    <span className="badge badge-soft-blue rounded-pill">{file.type.includes('pdf') ? 'PDF' : 'Image'}</span>
+                    <span className="badge badge-soft-blue rounded-pill flex-shrink-0">{file.type.includes('pdf') ? 'PDF' : 'Image'}</span>
                   </div>
                   <select
                     className="form-select form-select-sm mb-2"

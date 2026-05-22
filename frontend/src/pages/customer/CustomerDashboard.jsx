@@ -83,7 +83,7 @@ function CustomerDashboard() {
   return (
     <DashboardLayout
       title="Customer dashboard"
-      subtitle="Track onboarding progress and pending work in one place."
+      subtitle="Track project progress and pending work in one place."
       navItems={customerNav}
       roleLabel="Customer"
       userName="Nina Patel"
@@ -124,8 +124,8 @@ function CustomerDashboard() {
             <i className="bi bi-folder-plus" aria-hidden="true"></i>
           </span>
           <h3 className="h5 fw-bold mb-2">No projects yet</h3>
-          <p className="text-secondary mb-3">Create your first onboarding request to see it here.</p>
-          <a className="btn btn-primary" href="/customer/create">Create Onboarding</a>
+          <p className="text-secondary mb-3">Create your first project request to see it here.</p>
+          <a className="btn btn-primary" href="/customer/create">Create project</a>
         </div>
       ) : (
         <div className="row g-3 mb-4">

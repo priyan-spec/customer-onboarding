@@ -2,7 +2,7 @@ export const roleCards = [
   {
     title: 'Customer',
     role: 'CUSTOMER',
-    description: 'Create onboarding requests and track progress',
+    description: 'Create project requests and track progress',
     icon: 'bi-person-badge',
     to: '/customer',
   },
@@ -24,7 +24,7 @@ export const roleCards = [
 
 export const customerNav = [
   { label: 'Dashboard', icon: 'bi-grid-1x2', to: '/customer', end: true },
-  { label: 'Create Onboarding', icon: 'bi-plus-square', to: '/customer/create' },
+  { label: 'Create Project', icon: 'bi-plus-square', to: '/customer/create' },
   { label: 'My Projects', icon: 'bi-folder2-open', to: '/customer/projects' },
 ]
 
@@ -42,7 +42,7 @@ export const teamNav = [
 export const projects = [
   {
     id: 'acme-crm',
-    title: 'Acme CRM Onboarding',
+    title: 'Acme CRM project',
     customer: 'Acme Retail',
     contact: 'Nina Patel',
     email: 'nina@acmeretail.com',
@@ -73,7 +73,7 @@ export const projects = [
     progress: 48,
     dueDate: 'Jun 24, 2026',
     owner: 'Omar Lewis',
-    description: 'Analytics dashboard onboarding with integrations and QA.',
+    description: 'Analytics dashboard project with integrations and QA.',
     requirements: 'Connect analytics source, validate executive reports, and train admins.',
     documents: [
       { name: 'company-profile.pdf', type: 'Business Certificate', size: '1.2 MB' },
@@ -105,7 +105,7 @@ export const tasks = [
   {
     id: 1,
     title: 'Configure CRM workspace',
-    project: 'Acme CRM Onboarding',
+    project: 'Acme CRM project',
     description: 'Create workspace, custom fields, and CRM pipeline stages.',
     priority: 'HIGH',
     status: 'IN_PROGRESS',
@@ -115,7 +115,7 @@ export const tasks = [
   {
     id: 2,
     title: 'Verify uploaded documents',
-    project: 'Acme CRM Onboarding',
+    project: 'Acme CRM project',
     description: 'Review ID proof, business certificate, and address proof.',
     priority: 'MEDIUM',
     status: 'TODO',
@@ -182,7 +182,7 @@ export const teamMembers = [
 export const activities = [
   {
     title: 'Project Progress Updated',
-    description: 'Acme CRM Onboarding moved to 72% completion.',
+    description: 'Acme CRM project moved to 72% completion.',
     time: '4 min ago',
   },
   {
@@ -192,7 +192,7 @@ export const activities = [
   },
   {
     title: 'Project Created',
-    description: 'Northstar Dashboard Rollout was added to onboarding.',
+    description: 'Northstar Dashboard Rollout was added to project.',
     time: '1 hr ago',
   },
   {

@@ -6,7 +6,7 @@ function TeamManagement() {
   return (
     <DashboardLayout
       title="Team management"
-      subtitle="Monitor utilization and assign employees to onboarding tasks."
+      subtitle="Monitor utilization and assign employees to project tasks."
       navItems={managerNav}
       roleLabel="Project Manager"
       userName="Maya Singh"

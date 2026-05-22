@@ -94,7 +94,7 @@ function MyTasks() {
   return (
     <DashboardLayout
       title="My tasks"
-      subtitle="Start work, update status, and mark onboarding tasks complete."
+      subtitle="Start work, update status, and mark project tasks complete."
       navItems={teamNav}
       roleLabel="Team Member"
       userName="Aarav Mehta"

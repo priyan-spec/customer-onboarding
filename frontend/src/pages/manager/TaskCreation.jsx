@@ -10,7 +10,7 @@ function TaskCreation() {
   return (
     <DashboardLayout
       title="Tasks"
-      subtitle="Create, update, and assign tasks for customer onboarding work."
+      subtitle="Create, update, and assign tasks for customer project work."
       navItems={managerNav}
       roleLabel="Project Manager"
       userName="Maya Singh"

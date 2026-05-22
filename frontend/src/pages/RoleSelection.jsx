@@ -21,7 +21,7 @@ function RoleSelection() {
           <span className="brand-mark mx-auto mb-4">
             <i className="bi bi-rocket-takeoff" aria-hidden="true"></i>
           </span>
-          <h1 className="display-5 fw-bold mb-3">Customer Onboarding Tracker</h1>
+          <h1 className="display-5 fw-bold mb-3">Project Status Tracker</h1>
           <p className="lead text-secondary mb-0">Select your role to continue</p>
         </div>
 
