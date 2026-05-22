@@ -2,8 +2,12 @@ package com.onboarding.backend.service;
 
 import java.io.IOException;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -34,6 +38,11 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class ProjectService {
 
+	private static final String AUTHENTICATED_CUSTOMER_PROJECTS_KEY =
+		"#userId + ':' + T(org.springframework.security.core.context.SecurityContextHolder).getContext().getAuthentication().getName()";
+	private static final String AUTHENTICATED_MANAGER_PROJECTS_KEY =
+		"#managerId + ':' + T(org.springframework.security.core.context.SecurityContextHolder).getContext().getAuthentication().getName()";
+
 	private final ProjectRepository projectRepository;
 	private final UserRepository userRepository;
 	private final DocumentRepository documentRepository;
@@ -42,6 +51,7 @@ public class ProjectService {
 	private final NotificationService notificationService;
 
 	@Transactional
+	@CacheEvict(cacheNames = { "customerProjects", "managerProjects" }, allEntries = true)
 	public CreateProjectResponse createProject(
 		String title,
 		String description,
@@ -78,6 +88,7 @@ public class ProjectService {
 	}
 
 	@Transactional(readOnly = true)
+	@Cacheable(cacheNames = "customerProjects", key = AUTHENTICATED_CUSTOMER_PROJECTS_KEY)
 	public List<ProjectSummaryResponse> getCustomerProjects(Long userId) {
 		AppUser currentUser = accessControlService.currentUser();
 		if (!currentUser.getId().equals(userId)) {
@@ -85,10 +96,11 @@ public class ProjectService {
 		}
 		return projectRepository.findByCustomerId(userId).stream()
 			.map(this::toSummary)
-			.toList();
+			.collect(Collectors.toCollection(ArrayList::new));
 	}
 
 	@Transactional(readOnly = true)
+	@Cacheable(cacheNames = "managerProjects", key = AUTHENTICATED_MANAGER_PROJECTS_KEY)
 	public List<ProjectSummaryResponse> getManagerProjects(Long managerId) {
 		AppUser currentUser = accessControlService.currentUser();
 		if (!currentUser.getId().equals(managerId)) {
@@ -96,7 +108,7 @@ public class ProjectService {
 		}
 		return projectRepository.findByManagerId(managerId).stream()
 			.map(this::toSummary)
-			.toList();
+			.collect(Collectors.toCollection(ArrayList::new));
 	}
 
 	@Transactional(readOnly = true)
@@ -107,6 +119,7 @@ public class ProjectService {
 	}
 
 	@Transactional
+	@CacheEvict(cacheNames = { "customerProjects", "managerProjects" }, allEntries = true)
 	public void refreshProjectProgress(Project project) {
 		long totalTasks = taskRepository.countByProjectId(project.getId());
 		int progress = totalTasks == 0
@@ -141,7 +154,7 @@ public class ProjectService {
 			project.getDeadline(),
 			project.getProgress(),
 			project.getRequirements(),
-			documentRepository.findByProjectId(project.getId()).stream().map(this::toDocumentResponse).toList()
+			documentResponses(project.getId())
 		);
 	}
 
@@ -159,7 +172,7 @@ public class ProjectService {
 			project.getCustomer().getName(),
 			project.getManager().getId(),
 			project.getManager().getName(),
-			documentRepository.findByProjectId(project.getId()).stream().map(this::toDocumentResponse).toList()
+			documentResponses(project.getId())
 		);
 	}
 
@@ -196,5 +209,11 @@ public class ProjectService {
 
 	private DocumentResponse toDocumentResponse(Document document) {
 		return new DocumentResponse(document.getId(), document.getFileName());
+	}
+
+	private List<DocumentResponse> documentResponses(Long projectId) {
+		return documentRepository.findByProjectId(projectId).stream()
+			.map(this::toDocumentResponse)
+			.collect(Collectors.toCollection(ArrayList::new));
 	}
 }

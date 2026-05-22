@@ -1,5 +1,6 @@
 package com.onboarding.backend.dto;
 
+import java.io.Serializable;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -16,5 +17,5 @@ public record ProjectSummaryResponse(
 	Integer progress,
 	String requirements,
 	List<DocumentResponse> documents
-) {
+) implements Serializable {
 }
