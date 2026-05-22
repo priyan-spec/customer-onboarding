@@ -29,8 +29,7 @@ export const customerNav = [
 ]
 
 export const managerNav = [
-  { label: 'Dashboard', icon: 'bi-grid-1x2', to: '/manager', end: true },
-  { label: 'Assigned Projects', icon: 'bi-kanban', to: '/manager/projects' },
+  { label: 'Dashboard', icon: 'bi-grid-1x2', to: '/manager', end: true }
 ]
 
 export const teamNav = [
