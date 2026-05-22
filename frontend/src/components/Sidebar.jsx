@@ -11,7 +11,7 @@ function Sidebar({ navItems, open, onClose, roleLabel }) {
               <i className="bi bi-rocket-takeoff" aria-hidden="true"></i>
             </span>
             <span>
-              <span className="d-block fw-bold">OnboardFlow</span>
+              <span className="d-block fw-bold">ProjectFlow</span>
               <span className="small text-secondary">{roleLabel}</span>
             </span>
           </Link>
